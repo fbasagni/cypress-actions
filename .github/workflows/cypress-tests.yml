@@ -4,12 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       cli:
-        description: Run by cypress command line
-        default: yarn cypress run
+        description: Run by cypress node command
+        default: node runner.js
 
 jobs:
   cypress-electron-tests:
     runs-on: ubuntu-latest
+    container:
+      image: cypress/browsers:node18.12.0-chrome103-ff107
+      options: --user 1001
     steps:
       - name: Get code
         uses: actions/checkout@v3.3.0
@@ -19,6 +22,41 @@ jobs:
 
       - name: Run E2E tests
         run: ${{ github.event.inputs.cli }}
+        env:
+          BROWSER: electron
 
-    
-  
+  cypress-chrome-tests:
+    runs-on: ubuntu-latest
+    needs: cypress-electron-tests
+    container:
+      image: cypress/browsers:node18.12.0-chrome103-ff107
+      options: --user 1001
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3.3.0
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run E2E tests
+        run: ${{ github.event.inputs.cli }}
+        env:
+          BROWSER: chrome
+
+  cypress-firefox-tests:
+    runs-on: ubuntu-latest
+    needs: cypress-electron-tests
+    container:
+      image: cypress/browsers:node18.12.0-chrome103-ff107
+      options: --user 1001
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3.3.0
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run E2E tests
+        run: ${{ github.event.inputs.cli }}
+        env:
+          BROWSER: browser
